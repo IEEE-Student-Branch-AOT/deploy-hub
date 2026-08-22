@@ -1,0 +1,123 @@
+name: scan-and-deploy
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # GitHub often runs cron late under load; treat 10m as a floor
+  workflow_dispatch:
+  repository_dispatch:
+    types: [deploy-request]  # used by the Phase 3 webhook receiver
+
+# Only one scan at a time, so registry.json is never written concurrently.
+concurrency:
+  group: scan-and-deploy
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    environment: production  # branch policy: VERCEL_TOKEN is reachable from main only
+    permissions:
+      contents: write        # commit registry.json back to this repo only
+    outputs:
+      matrix: ${{ steps.scan.outputs.matrix }}
+      count: ${{ steps.scan.outputs.count }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+
+      - uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        id: app
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ vars.ORG }}
+
+      - id: scan
+        run: node scripts/scan.mjs
+        env:
+          ORG: ${{ vars.ORG }}
+          PROJECT_PREFIX: ${{ vars.PROJECT_PREFIX }}
+          MAX_DEPLOYS: ${{ vars.MAX_DEPLOYS }}
+          IGNORE_REPOS: ${{ vars.IGNORE_REPOS }}
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+
+      - name: Persist newly provisioned projects
+        run: |
+          git config user.name  'deploy-hub[bot]'
+          git config user.email 'deploy-hub[bot]@users.noreply.github.com'
+          git add registry.json
+          git diff --quiet --cached || git commit -m 'chore(registry): provisioning update [skip ci]'
+          git push
+
+  deploy:
+    needs: scan
+    if: needs.scan.outputs.count != '0'
+    strategy:
+      fail-fast: false
+      max-parallel: 3          # Hobby serialises anyway; keep the queue polite
+      matrix: ${{ fromJson(needs.scan.outputs.matrix) }}
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      key: ${{ matrix.key }}
+      repo: ${{ matrix.repo }}
+      ref: ${{ matrix.ref }}
+      sha: ${{ matrix.sha }}
+      project_id: ${{ matrix.project_id }}
+      project_name: ${{ matrix.project_name }}
+      root: ${{ matrix.root }}
+      node: ${{ matrix.node }}
+      prod: ${{ matrix.prod }}
+      build_env: ${{ matrix.build_env }}
+
+  record:
+    needs: [scan, deploy]
+    if: always() && needs.scan.outputs.count != '0'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: registry-write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          path: results
+          pattern: result-*
+          merge-multiple: true
+        continue-on-error: true
+
+      - uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        id: app
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ vars.ORG }}
+
+      - run: node scripts/record.mjs
+        env:
+          ORG: ${{ vars.ORG }}
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          RESULTS_DIR: results
+
+      - name: Commit deployment state
+        run: |
+          git config user.name  'deploy-hub[bot]'
+          git config user.email 'deploy-hub[bot]@users.noreply.github.com'
+          git pull --rebase --autostash
+          git add registry.json
+          git diff --quiet --cached || git commit -m 'chore(registry): deployment results [skip ci]'
+          git push

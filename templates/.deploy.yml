@@ -1,0 +1,45 @@
+# Copy this file to the ROOT of your repository as `.deploy.yml`.
+# It is optional -- without it, your default branch deploys to production.
+#
+# You never need a Vercel account, a token, or any secret. The hub reads this
+# file, builds your project, and deploys it. Deployment URLs show up as a commit
+# status check on each commit.
+
+version: 1
+
+# Set to false to switch deployments off for this repo entirely.
+enabled: true
+
+# Subdirectory to build from, for monorepos. Must stay inside the repo.
+root: .
+
+# Node major version: 18, 20, 22 or 24.
+node: 22
+
+# Up to 3 named environments. Each one becomes its own Vercel project with its
+# own stable URL, so they never overwrite each other:
+#
+#   production -> https://<prefix>-<repo>.vercel.app
+#   dev        -> https://<prefix>-<repo>-dev.vercel.app
+#   test       -> https://<prefix>-<repo>-test.vercel.app
+#
+# The project name is derived from your repo name. You cannot set it here --
+# that is deliberate, so no repo can deploy over another repo's site.
+environments:
+  production:
+    branch: main
+  dev:
+    branch: dev
+  test:
+    branch: test
+
+previews:
+  # Deploy every open pull request to a throwaway preview URL.
+  pull_requests: true
+
+build:
+  # Build-time environment variables. These are PUBLIC -- they live in git and
+  # are baked into the browser bundle. Never put an API key or database URL
+  # here. Runtime secrets are set by an admin in the Vercel dashboard instead.
+  env:
+    NEXT_PUBLIC_SITE_NAME: "My Project"
