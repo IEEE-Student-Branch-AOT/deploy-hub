@@ -8,7 +8,8 @@
  */
 import fs from 'node:fs';
 import {
-  ORG, MAX_DEPLOYS, gh, vercel, parseConfig, detectWebProject, projectNameFor, readJson, writeJson,
+  ORG, MAX_DEPLOYS, VERCEL_FRAMEWORK, gh, vercel, parseConfig, detectWebProject, projectNameFor,
+  readJson, writeJson,
 } from './lib.mjs';
 
 const REGISTRY = 'registry.json';
@@ -88,10 +89,26 @@ for (const r of repos) {
     const projectName = projectNameFor(repo, t.envName);
     if (!state.projectId || state.projectName !== projectName) {
       const existing = await vercel.findProject(projectName);
-      const project = existing || (await vercel.createProject(projectName, { nodeVersion: config.node }));
+      const project = existing || (await vercel.createProject(projectName, {
+        nodeVersion: config.node,
+        framework: VERCEL_FRAMEWORK[detected.framework] ?? null,
+      }));
       state.projectId = project.id;
       state.projectName = project.name;
       console.log(`  ${repo}/${t.key} -> project ${project.name} (${project.id})${existing ? '' : ' [created]'}`);
+    }
+
+    // Without the right preset Vercel treats the project as "Other" and serves
+    // only public/ as static files, discarding the framework build entirely --
+    // a green build whose every route 404s. Re-deploy when this changes, since
+    // settings alone do not rebuild anything.
+    const frameworkSlug = VERCEL_FRAMEWORK[detected.framework] ?? null;
+    if (state.frameworkSlug !== frameworkSlug) {
+      if (await vercel.setFramework(state.projectId, frameworkSlug)) {
+        state.frameworkSlug = frameworkSlug;
+        state.lastSha = null;
+        console.log(`    framework set to ${frameworkSlug ?? 'other (static)'}`);
+      }
     }
 
     // Projects created before makePublic() existed still carry a login wall.

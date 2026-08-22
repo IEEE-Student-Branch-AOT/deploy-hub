@@ -163,6 +163,31 @@ export const gh = {
 
 /* ------------------------------- Vercel ---------------------------------- */
 
+/**
+ * npm dependency (as returned by detectWebProject) -> Vercel framework preset.
+ *
+ * This MUST be set on the project. A project with framework `null` is treated
+ * as "Other": Vercel runs the build command and then serves a static output
+ * directory (defaulting to `public/`), silently discarding a Next.js `.next/`
+ * build. Every route 404s while the build log looks perfectly healthy.
+ *
+ * null is correct only for genuinely static sites.
+ */
+export const VERCEL_FRAMEWORK = {
+  next: 'nextjs',
+  nuxt: 'nuxtjs',
+  astro: 'astro',
+  vite: 'vite',
+  gatsby: 'gatsby',
+  '@remix-run/dev': 'remix',
+  '@sveltejs/kit': 'sveltekit',
+  'react-scripts': 'create-react-app',
+  '@angular/cli': 'angular',
+  'vue-cli-service': 'vue',
+  static: null,
+  'custom-build-script': null,
+};
+
 export const vercel = {
   token: () => req('VERCEL_TOKEN'),
   // Hobby accounts have no team; TEAM_ID stays empty and the param is omitted.
@@ -175,13 +200,13 @@ export const vercel = {
     return { id: r.json.id, name: r.json.name };
   },
 
-  async createProject(name, { nodeVersion } = {}) {
+  async createProject(name, { nodeVersion, framework = null } = {}) {
     const r = await api(`${VC}/v9/projects${vercel.scope()}`, {
       token: vercel.token(),
       method: 'POST',
       // framework: null lets Vercel auto-detect from the prebuilt output.
       // nodeVersion is rejected here -- it can only be PATCHed after creation.
-      body: { name, framework: null },
+      body: { name, framework },
     });
     if (r.status === 409) return vercel.findProject(name);
     if (!r.ok) throw new Error(`createProject ${name} ${r.status}: ${r.text}`);
@@ -292,6 +317,17 @@ export const vercel = {
       body: { key, value, type: 'plain', target: ['production', 'preview'] },
     });
     if (!r.ok) console.warn(`    note: could not set env ${key} (${r.status}: ${r.text.slice(0, 120)})`);
+  },
+
+  /** Pin the build preset. See VERCEL_FRAMEWORK for why this is not optional. */
+  async setFramework(projectId, framework) {
+    const r = await api(`${VC}/v9/projects/${projectId}${vercel.scope()}`, {
+      token: vercel.token(),
+      method: 'PATCH',
+      body: { framework },
+    });
+    if (!r.ok) console.warn(`    note: could not set framework=${framework} (${r.status}: ${r.text.slice(0, 160)})`);
+    return r.ok;
   },
 
   // Best effort: affects the serverless runtime only. Never fail a deploy over it.
