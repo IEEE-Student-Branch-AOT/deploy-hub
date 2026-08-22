@@ -94,6 +94,15 @@ for (const r of repos) {
       console.log(`  ${repo}/${t.key} -> project ${project.name} (${project.id})${existing ? '' : ' [created]'}`);
     }
 
+    // Projects created before makePublic() existed still carry a login wall.
+    // Clear it once, then remember so we stop calling the API every scan.
+    if (!state.isPublic) {
+      if (await vercel.makePublic(state.projectId)) {
+        state.isPublic = true;
+        console.log(`    deployment protection disabled`);
+      }
+    }
+
     // Resolve the project's stable public URL once. Deployment URLs are unique
     // per push; this is the one students should be given.
     if (!state.stableUrl) {

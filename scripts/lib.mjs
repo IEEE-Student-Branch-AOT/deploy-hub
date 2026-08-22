@@ -186,8 +186,27 @@ export const vercel = {
     if (r.status === 409) return vercel.findProject(name);
     if (!r.ok) throw new Error(`createProject ${name} ${r.status}: ${r.text}`);
     const project = { id: r.json.id, name: r.json.name };
+    await vercel.makePublic(project.id);
     if (nodeVersion) await vercel.setNodeVersion(project.id, nodeVersion);
     return project;
+  },
+
+  /**
+   * Turn off Deployment Protection.
+   *
+   * New projects can default to requiring a Vercel login, which makes the site
+   * redirect to vercel.com/sso-api for anyone not signed into the admin's
+   * account -- they land on a 404 and assume the deploy is broken. These are
+   * public club sites, so protection must be off.
+   */
+  async makePublic(projectId) {
+    const r = await api(`${VC}/v9/projects/${projectId}${vercel.scope()}`, {
+      token: vercel.token(),
+      method: 'PATCH',
+      body: { ssoProtection: null, passwordProtection: null },
+    });
+    if (!r.ok) console.warn(`    note: could not disable deployment protection (${r.status}: ${r.text.slice(0, 160)})`);
+    return r.ok;
   },
 
   /**
@@ -246,8 +265,13 @@ export const vercel = {
   async pickLiveDomain(domains) {
     for (const name of domains) {
       try {
-        const res = await fetch(`https://${name}`, { redirect: 'follow', signal: AbortSignal.timeout(10_000) });
-        if (!res.headers.get('x-vercel-error')) return name;
+        // Do NOT follow redirects: a protected deployment 302s to Vercel's SSO
+        // login, which answers 200 and would otherwise look healthy.
+        const res = await fetch(`https://${name}`, { redirect: 'manual', signal: AbortSignal.timeout(10_000) });
+        if (res.headers.get('x-vercel-error')) continue;             // nothing aliased here
+        const location = res.headers.get('location') || '';
+        if (/vercel\.com\/sso-api|\/_vercel\/protection/.test(location)) continue; // login wall
+        return name;
       } catch { /* DNS or timeout: treat as not live, try the next */ }
     }
     return null;
