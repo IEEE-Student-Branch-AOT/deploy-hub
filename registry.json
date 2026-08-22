@@ -14,7 +14,7 @@
           "branch": "main",
           "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T21:17:57.622Z",
+          "lastRun": "2026-08-22T21:22:31.846Z",
           "isPublic": true,
           "frameworkSlug": null
         }
@@ -32,7 +32,7 @@
           "branch": "main",
           "lastSha": "fe697778ccee113ff95b9af724646645909a6a03",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T21:17:59.055Z",
+          "lastRun": "2026-08-22T21:22:33.723Z",
           "isPublic": true,
           "frameworkSlug": "create-react-app"
         }
