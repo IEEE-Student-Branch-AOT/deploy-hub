@@ -14,7 +14,7 @@
           "branch": "main",
           "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T19:39:25.665Z"
+          "lastRun": "2026-08-22T20:01:44.298Z"
         }
       },
       "defaultBranch": "main",
@@ -30,7 +30,7 @@
           "branch": "main",
           "lastSha": "fe697778ccee113ff95b9af724646645909a6a03",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T19:52:01.008Z"
+          "lastRun": "2026-08-22T20:01:44.765Z"
         }
       },
       "defaultBranch": "main",
@@ -43,7 +43,11 @@
         "production": {
           "projectId": "prj_6a5tQx7voddCAHYINuTgvxPwyBAn",
           "projectName": "sbaot-newwebsite",
-          "branch": "main"
+          "branch": "main",
+          "lastSha": "af00501e9a8bcaed40231119d7781efbc1638d4c",
+          "lastStatus": "success",
+          "lastRun": "2026-08-22T20:01:45.188Z",
+          "url": "https://sbaot-newwebsite.vercel.app"
         }
       },
       "defaultBranch": "main",
