@@ -90,13 +90,21 @@ jobs:
         id: vercel
         working-directory: source/${{ inputs.root }}
         run: |
-          set -o pipefail
           # Build-time env vars live on the Vercel project (set by the scan job
           # from .deploy.yml), so nothing student-controlled reaches this shell.
+          #
+          # Keep stdout separate from stderr: the CLI writes ONLY the deployment
+          # URL to stdout. Scraping the merged log instead can pick up the
+          # "Production:" banner, which may name a hostname owned by a different
+          # Vercel account and therefore 404s.
+          set +e
           vercel deploy --yes ${{ inputs.prod && '--prod' || '' }} \
             --token "$VERCEL_TOKEN" ${VERCEL_TEAM_ID:+--scope "$VERCEL_TEAM_ID"} \
-            2>&1 | tee deploy.log
-          echo "url=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.vercel\.app' deploy.log | tail -1)" >> "$GITHUB_OUTPUT"
+            >deploy.url 2>deploy.log
+          code=$?
+          cat deploy.log
+          [ $code -eq 0 ] || exit $code
+          echo "url=$(tr -d '\r' < deploy.url | grep -E '^https://' | tail -1)" >> "$GITHUB_OUTPUT"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}

@@ -13,7 +13,7 @@
           "projectName": "sbaot-ieee-gaming-hub-backend",
           "branch": "main",
           "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
-          "lastStatus": "failure",
+          "lastStatus": "stale",
           "lastRun": "2026-08-22T20:03:52.179Z"
         }
       },
@@ -29,7 +29,7 @@
           "projectName": "sbaot-ieee-gaming-hub-frontend",
           "branch": "main",
           "lastSha": "fe697778ccee113ff95b9af724646645909a6a03",
-          "lastStatus": "failure",
+          "lastStatus": "stale",
           "lastRun": "2026-08-22T20:03:52.708Z"
         }
       },
@@ -45,9 +45,8 @@
           "projectName": "sbaot-newwebsite",
           "branch": "main",
           "lastSha": "af00501e9a8bcaed40231119d7781efbc1638d4c",
-          "lastStatus": "success",
-          "lastRun": "2026-08-22T20:01:45.188Z",
-          "url": "https://sbaot-newwebsite.vercel.app"
+          "lastStatus": "stale",
+          "lastRun": "2026-08-22T20:01:45.188Z"
         }
       },
       "defaultBranch": "main",

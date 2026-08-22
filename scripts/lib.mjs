@@ -114,6 +114,23 @@ export const vercel = {
   },
 
   /**
+   * Domains actually assigned to the project, shortest first.
+   *
+   * The CLI's "Production:" line is not trustworthy for this: it can print
+   * <project>.vercel.app even when that hostname belongs to a different Vercel
+   * account, in which case it 404s. Only this list reflects reality. Typically
+   * the real one is <project>-<account-slug>.vercel.app.
+   */
+  async projectDomains(projectId) {
+    const r = await api(`${VC}/v9/projects/${projectId}/domains${vercel.scope()}`, { token: vercel.token() });
+    if (!r.ok) return [];
+    return (r.json.domains || [])
+      .filter((d) => !d.redirect && d.verified !== false)
+      .map((d) => d.name)
+      .sort((a, b) => a.length - b.length);
+  },
+
+  /**
    * Upsert a plaintext build/runtime environment variable onto the project.
    * These come from .deploy.yml, so they are public by definition -- real
    * secrets are added by an admin in the dashboard and are never touched here.

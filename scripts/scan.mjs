@@ -94,6 +94,16 @@ for (const r of repos) {
       console.log(`  ${repo}/${t.key} -> project ${project.name} (${project.id})${existing ? '' : ' [created]'}`);
     }
 
+    // Resolve the project's stable public URL once. Deployment URLs are unique
+    // per push; this is the one students should be given.
+    if (!state.stableUrl) {
+      const domains = await vercel.projectDomains(state.projectId);
+      if (domains.length) {
+        state.stableUrl = `https://${domains[0]}`;
+        console.log(`    stable url ${state.stableUrl}${domains.length > 1 ? `  (also: ${domains.slice(1).join(', ')})` : ''}`);
+      }
+    }
+
     // Sync build env only when .deploy.yml changed it, to keep API calls down.
     const envFingerprint = JSON.stringify(config.build.env);
     if (envFingerprint !== '{}' && state.envFingerprint !== envFingerprint) {

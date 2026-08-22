@@ -36,17 +36,21 @@ for (const file of files) {
   state.lastSha = r.sha;
   state.lastStatus = r.status;
   state.lastRun = new Date().toISOString();
-  if (r.url) state.url = r.url;
+  if (r.url) state.deploymentUrl = r.url; // immutable, unique to this push
 
+  // Point people at the project's stable alias when we know it; the per-push
+  // deployment URL is the fallback.
   const success = r.status === 'success';
+  const link = success ? (state.stableUrl || r.url) : r.runUrl;
+
   await gh.setStatus(r.repo, r.sha, {
     state: success ? 'success' : 'failure',
-    url: r.url || r.runUrl,
+    url: link,
     context: `deploy/${r.key}`,
-    description: success ? `Deployed to ${r.url}` : 'Deployment failed - see the hub run log',
+    description: success ? `Deployed to ${link}` : 'Build failed - see the hub run log',
   });
 
-  console.log(`  ${r.repo}/${r.key} ${r.status}${r.url ? ` ${r.url}` : ''}`);
+  console.log(`  ${r.repo}/${r.key} ${r.status}${link ? ` ${link}` : ''}`);
 }
 
 writeJson(REGISTRY, registry);
