@@ -1,3 +1,61 @@
 {
-  "repos": {}
+  "repos": {
+    "IEEESB_website": {
+      "environments": {},
+      "defaultBranch": "main",
+      "status": "skipped",
+      "reason": "no package.json and no index.html at the repository root"
+    },
+    "ieee-gaming-hub-backend": {
+      "environments": {
+        "production": {
+          "projectId": "prj_pDXPU95MEYCfK3zirIAHTF7tV3bL",
+          "projectName": "sbaot-ieee-gaming-hub-backend",
+          "branch": "main"
+        }
+      },
+      "defaultBranch": "main",
+      "status": "active",
+      "reason": "",
+      "framework": "custom-build-script"
+    },
+    "ieee-gaming-hub-frontend": {
+      "environments": {
+        "production": {
+          "projectId": "prj_3onELTSdbuOmD9mDAOAVts3K2d60",
+          "projectName": "sbaot-ieee-gaming-hub-frontend",
+          "branch": "main"
+        }
+      },
+      "defaultBranch": "main",
+      "status": "active",
+      "reason": "",
+      "framework": "react-scripts"
+    },
+    "newWebsite": {
+      "environments": {
+        "production": {
+          "projectId": "prj_6a5tQx7voddCAHYINuTgvxPwyBAn",
+          "projectName": "sbaot-newwebsite",
+          "branch": "main"
+        }
+      },
+      "defaultBranch": "main",
+      "status": "active",
+      "reason": "",
+      "framework": "next"
+    },
+    "certificate_admin": {
+      "environments": {},
+      "defaultBranch": "main",
+      "status": "skipped",
+      "reason": "no package.json and no index.html at the repository root"
+    },
+    "ieee_new_web_backend": {
+      "environments": {},
+      "defaultBranch": "main",
+      "status": "skipped",
+      "reason": "no package.json and no index.html at the repository root"
+    }
+  }
 }
