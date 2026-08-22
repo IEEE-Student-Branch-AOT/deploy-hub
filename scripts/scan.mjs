@@ -97,7 +97,13 @@ for (const r of repos) {
     // Resolve the project's stable public URL once. Deployment URLs are unique
     // per push; this is the one students should be given.
     if (!state.stableUrl) {
-      const domains = await vercel.projectDomains(state.projectId);
+      // Deployment aliases first: that is where the working host usually is.
+      const domains = [
+        ...new Set([
+          ...(await vercel.productionAliases(state.projectId)),
+          ...(await vercel.projectDomains(state.projectId)),
+        ]),
+      ].sort((a, b) => a.length - b.length);
       const live = await vercel.pickLiveDomain(domains);
       if (live) {
         state.stableUrl = `https://${live}`;

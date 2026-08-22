@@ -131,6 +131,29 @@ export const vercel = {
   },
 
   /**
+   * Aliases attached to the project's latest READY production deployment.
+   *
+   * This is where <project>-<account-slug>.vercel.app lives. It is NOT a
+   * project domain, so /projects/{id}/domains never returns it -- that endpoint
+   * reports only <project>.vercel.app, which is frequently dead. Both sources
+   * are needed to find the URL that actually serves.
+   */
+  async productionAliases(projectId) {
+    const team = process.env.VERCEL_TEAM_ID ? `&teamId=${process.env.VERCEL_TEAM_ID}` : '';
+    const list = await api(
+      `${VC}/v6/deployments?projectId=${projectId}&target=production&state=READY&limit=1${team}`,
+      { token: vercel.token() },
+    );
+    const uid = list.ok && list.json?.deployments?.[0]?.uid;
+    if (!uid) return [];
+
+    const dep = await api(`${VC}/v13/deployments/${uid}${vercel.scope()}`, { token: vercel.token() });
+    if (!dep.ok) return [];
+    // `alias` is a list of hostnames; older payloads nest them as objects.
+    return (dep.json.alias || []).map((a) => (typeof a === 'string' ? a : a?.domain)).filter(Boolean);
+  },
+
+  /**
    * Return the first domain that actually serves the site.
    *
    * Being listed on the project is not enough: Vercel registers
