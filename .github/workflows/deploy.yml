@@ -101,16 +101,20 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
 
+      # The filename must be unique: the record job downloads every result-*
+      # artifact with merge-multiple, which flattens them into one directory.
+      # A shared inner filename would silently overwrite all but one.
       - name: Write result
         if: always()
         run: |
           node -e '
-            require("node:fs").writeFileSync("result.json", JSON.stringify({
+            require("node:fs").writeFileSync(process.env.OUT, JSON.stringify({
               repo: process.env.REPO, key: process.env.KEY, sha: process.env.SHA,
               status: process.env.STATUS, url: process.env.URL || "", runUrl: process.env.RUN_URL,
             }, null, 2));
           '
         env:
+          OUT: result-${{ needs.fetch.outputs.slug }}.json
           REPO: ${{ inputs.repo }}
           KEY: ${{ inputs.key }}
           SHA: ${{ inputs.sha }}
@@ -122,5 +126,5 @@ jobs:
         if: always()
         with:
           name: result-${{ needs.fetch.outputs.slug }}
-          path: result.json
+          path: result-${{ needs.fetch.outputs.slug }}.json
           retention-days: 1
