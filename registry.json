@@ -53,7 +53,8 @@
           "lastRun": "2026-08-22T21:18:00.335Z",
           "deploymentUrl": "https://sbaot-newwebsite-rb9wmn8nx-ieee-sbaot.vercel.app",
           "isPublic": true,
-          "frameworkSlug": "nextjs"
+          "frameworkSlug": "nextjs",
+          "stableUrl": "https://sbaot-newwebsite.vercel.app"
         }
       },
       "defaultBranch": "main",
