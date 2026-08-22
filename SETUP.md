@@ -197,14 +197,25 @@ else, and show up as a red `deploy/<env>` check on the offending commit.
 
 Post this, and nothing more:
 
-> Push to `main` and your site goes live within ~10 minutes at
-> `https://sbaot-<your-repo-name>.vercel.app`. The deployment URL appears as a
-> check on your commit. You do not need a Vercel account and there is nothing
-> to configure. To add `dev`/`test` environments or PR previews, drop
-> [`.deploy.yml`](./templates/.deploy.yml) in your repo root.
+> Push to `main` and your site goes live within ~10 minutes. **Your URL appears
+> as a green check on your commit** — click it. You do not need a Vercel
+> account and there is nothing to configure. To add `dev`/`test` environments
+> or PR previews, drop [`.deploy.yml`](./templates/.deploy.yml) in your repo
+> root.
+>
+> A red check means your build failed; the link goes to the log. The two most
+> common causes are lint warnings failing the build under `CI=true` (add
+> `CI: "false"` under `build.env`) and a `package-lock.json` that is out of sync
+> with `package.json` (run `npm install` and commit it).
 >
 > Runtime secrets (API keys, database URLs) are **not** set in your repo — ask
 > an admin to add them to your Vercel project.
+
+Do not publish a URL pattern for students to guess. The working host is
+generally `<project>-<account-slug>.vercel.app`, but `<project>.vercel.app` is
+often registered to the project while serving nothing, and which one is live can
+differ per project. `registry.json` holds the resolved `stableUrl` for each, and
+the commit status always carries the correct link.
 
 ---
 

@@ -74,6 +74,38 @@ export const gh = {
     return r.json.map((p) => ({ number: p.number, sha: p.head.sha, ref: p.head.ref }));
   },
 
+  /**
+   * Post a check run, which renders a title, summary and a full log body
+   * directly on the student's commit -- unlike a commit status, whose
+   * description is capped at 140 characters and carries only a link.
+   *
+   * Needs the App's "Checks: Read and write" permission. Degrades to a warning
+   * if that has not been granted; the commit status is posted either way.
+   */
+  async createCheckRun(repo, sha, { name, conclusion, title, summary, text, detailsUrl }) {
+    const r = await api(`${GH}/repos/${ORG}/${repo}/check-runs`, {
+      token: gh.token(),
+      method: 'POST',
+      body: {
+        name,
+        head_sha: sha,
+        status: 'completed',
+        conclusion,
+        completed_at: new Date().toISOString(),
+        ...(detailsUrl ? { details_url: detailsUrl } : {}),
+        output: { title: title.slice(0, 255), summary: summary.slice(0, 65535), ...(text ? { text: text.slice(0, 65535) } : {}) },
+      },
+    });
+    if (!r.ok) {
+      const hint = r.status === 403 || r.status === 404
+        ? ' -- grant the App "Checks: Read and write" to show build errors inline'
+        : '';
+      console.warn(`  check run for ${repo}@${sha.slice(0, 7)} failed ${r.status}${hint}`);
+      return false;
+    }
+    return true;
+  },
+
   async setStatus(repo, sha, { state, url, context, description }) {
     const r = await api(`${GH}/repos/${ORG}/${repo}/statuses/${sha}`, {
       token: gh.token(),

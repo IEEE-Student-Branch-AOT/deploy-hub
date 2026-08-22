@@ -103,6 +103,8 @@ jobs:
             >deploy.url 2>deploy.log
           code=$?
           cat deploy.log
+          # Keep the log where the result step can read it, on success or failure.
+          cp deploy.log "$GITHUB_WORKSPACE/deploy.log" 2>/dev/null || true
           [ $code -eq 0 ] || exit $code
           echo "url=$(tr -d '\r' < deploy.url | grep -E '^https://' | tail -1)" >> "$GITHUB_OUTPUT"
         env:
@@ -116,9 +118,24 @@ jobs:
         if: always()
         run: |
           node -e '
-            require("node:fs").writeFileSync(process.env.OUT, JSON.stringify({
+            const fs = require("node:fs");
+            let errorLog = "";
+            if (process.env.STATUS !== "success") {
+              let raw = "";
+              try { raw = fs.readFileSync("deploy.log", "utf8"); } catch {}
+              const noise = /^(Vercel CLI|> NOTE:|> https:\/\/vercel\.com\/docs\/cli\/about-telemetry|npm notice|Retrieving project|Inspect:)/;
+              errorLog = raw
+                .replace(/\x1b\[[0-9;]*[A-Za-z]/g, "")   // strip colour codes
+                .split("\n")
+                .filter((l) => l.trim() && !noise.test(l.trim()))
+                .slice(-45)                               // the tail is where the error is
+                .join("\n")
+                .slice(-5000);
+            }
+            fs.writeFileSync(process.env.OUT, JSON.stringify({
               repo: process.env.REPO, key: process.env.KEY, sha: process.env.SHA,
-              status: process.env.STATUS, url: process.env.URL || "", runUrl: process.env.RUN_URL,
+              status: process.env.STATUS, url: process.env.URL || "",
+              runUrl: process.env.RUN_URL, errorLog,
             }, null, 2));
           '
         env:
@@ -129,6 +146,21 @@ jobs:
           STATUS: ${{ steps.vercel.outcome == 'success' && 'success' || 'failure' }}
           URL: ${{ steps.vercel.outputs.url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Job summary
+        if: always()
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const r = JSON.parse(fs.readFileSync(process.env.OUT, "utf8"));
+            const ok = r.status === "success";
+            const body = ok
+              ? `### :white_check_mark: ${r.repo} / ${r.key}\n\n${r.url}\n`
+              : `### :x: ${r.repo} / ${r.key}\n\n\`\`\`\n${r.errorLog || "no log captured"}\n\`\`\`\n`;
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, body);
+          '
+        env:
+          OUT: result-${{ needs.fetch.outputs.slug }}.json
 
       - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         if: always()

@@ -47,7 +47,26 @@ for (const file of files) {
     state: success ? 'success' : 'failure',
     url: link,
     context: `deploy/${r.key}`,
-    description: success ? `Deployed to ${link}` : 'Build failed - see the hub run log',
+    description: success ? `Deployed to ${link}` : 'Build failed - open the check for the log',
+  });
+
+  await gh.createCheckRun(r.repo, r.sha, {
+    name: `deploy/${r.key}`,
+    conclusion: success ? 'success' : 'failure',
+    title: success ? 'Deployed' : 'Build failed',
+    summary: success
+      ? `Live at ${link}`
+      : [
+          'Vercel could not build this commit. The end of the build log is below.',
+          '',
+          'Common causes:',
+          '- `Treating warnings as errors because process.env.CI = true` -> fix the warnings, or add `CI: "false"` under `build.env` in `.deploy.yml`',
+          '- `npm ci can only install packages when ... in sync` -> run `npm install` and commit the updated `package-lock.json`',
+          '',
+          `[Full log](${r.runUrl})`,
+        ].join('\n'),
+    text: success || !r.errorLog ? undefined : ['```', r.errorLog, '```'].join('\n'),
+    detailsUrl: link,
   });
 
   console.log(`  ${r.repo}/${r.key} ${r.status}${link ? ` ${link}` : ''}`);
