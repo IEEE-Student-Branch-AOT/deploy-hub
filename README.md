@@ -90,3 +90,24 @@ Vercel API which domains are actually assigned and records the answer as
 If you outgrow these, the same architecture ports to Cloudflare Pages (more
 generous free tier, and it allows team members) by replacing only the `deploy`
 job.
+
+## Deployment Protection
+
+New Vercel projects can default to requiring a Vercel login. A protected site
+answers `302 -> vercel.com/sso-api`, and anyone not signed into the admin's
+account lands on a 404 and reasonably concludes the deploy is broken.
+
+`vercel.makePublic()` clears `ssoProtection` and `passwordProtection` when a
+project is created, and the scan repairs any project still missing the
+`isPublic` flag in `registry.json`.
+
+Beware when testing by hand: `curl -L` **follows** the SSO redirect and returns
+`200` from the login page, so a protected site looks healthy. Check without
+following redirects:
+
+```bash
+curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://<host>
+```
+
+A bare `200` is live. A `302` to `vercel.com/sso-api` is a login wall. A `404`
+carrying an `x-vercel-error` header means nothing is aliased to that hostname.
