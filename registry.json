@@ -11,7 +11,10 @@
         "production": {
           "projectId": "prj_pDXPU95MEYCfK3zirIAHTF7tV3bL",
           "projectName": "sbaot-ieee-gaming-hub-backend",
-          "branch": "main"
+          "branch": "main",
+          "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
+          "lastStatus": "failure",
+          "lastRun": "2026-08-22T19:39:25.665Z"
         }
       },
       "defaultBranch": "main",
