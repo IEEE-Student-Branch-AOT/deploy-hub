@@ -166,17 +166,16 @@ notes:
 Non-web repos are skipped with a reason recorded in `registry.json`, not
 failed.
 
-### If `vercel build` fails with a credentials error
+### Common student-repo build failures
 
-The build job deliberately has no token. If your Vercel CLI version insists on
-authentication for `vercel build`, the fix is to pin the CLI:
+These are the students' to fix, not yours. They fail one repo and block nobody
+else, and show up as a red `deploy/<env>` check on the offending commit.
 
-```yaml
-- run: npm install --global vercel@39
-```
-
-Do **not** "fix" it by passing `VERCEL_TOKEN` into the build job — that
-defeats the entire design. See the security note in `README.md`.
+| Symptom in the log | Fix, in the student's repo |
+| --- | --- |
+| `Treating warnings as errors because process.env.CI = true` | Clean the lint warnings, or add `CI: "false"` under `build.env` in `.deploy.yml` |
+| `npm ci can only install packages when your package.json and package-lock.json are in sync` | Run `npm install` and commit the updated lockfile |
+| Repo is an API server, not a site | Set `enabled: false` in its `.deploy.yml` |
 
 ---
 
