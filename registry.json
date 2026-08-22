@@ -14,7 +14,8 @@
           "branch": "main",
           "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
           "lastStatus": "stale",
-          "lastRun": "2026-08-22T20:03:52.179Z"
+          "lastRun": "2026-08-22T20:03:52.179Z",
+          "stableUrl": "https://sbaot-ieee-gaming-hub-backend.vercel.app"
         }
       },
       "defaultBranch": "main",
@@ -30,7 +31,8 @@
           "branch": "main",
           "lastSha": "fe697778ccee113ff95b9af724646645909a6a03",
           "lastStatus": "stale",
-          "lastRun": "2026-08-22T20:03:52.708Z"
+          "lastRun": "2026-08-22T20:03:52.708Z",
+          "stableUrl": "https://sbaot-ieee-gaming-hub-frontend.vercel.app"
         }
       },
       "defaultBranch": "main",
@@ -46,7 +48,8 @@
           "branch": "main",
           "lastSha": "af00501e9a8bcaed40231119d7781efbc1638d4c",
           "lastStatus": "stale",
-          "lastRun": "2026-08-22T20:01:45.188Z"
+          "lastRun": "2026-08-22T20:01:45.188Z",
+          "stableUrl": "https://sbaot-newwebsite.vercel.app"
         }
       },
       "defaultBranch": "main",
