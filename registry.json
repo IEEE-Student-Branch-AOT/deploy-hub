@@ -47,7 +47,8 @@
           "lastSha": "af00501e9a8bcaed40231119d7781efbc1638d4c",
           "lastStatus": "success",
           "lastRun": "2026-08-22T20:22:16.632Z",
-          "deploymentUrl": "https://sbaot-newwebsite-51hezu53n-ieee-sbaot.vercel.app"
+          "deploymentUrl": "https://sbaot-newwebsite-51hezu53n-ieee-sbaot.vercel.app",
+          "stableUrl": "https://sbaot-newwebsite-ieee-sbaot.vercel.app"
         }
       },
       "defaultBranch": "main",
