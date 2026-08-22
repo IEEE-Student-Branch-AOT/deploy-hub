@@ -131,6 +131,29 @@ export const vercel = {
   },
 
   /**
+   * Return the first domain that actually serves the site.
+   *
+   * Being listed on the project is not enough: Vercel registers
+   * <project>.vercel.app to the project even when no deployment is aliased
+   * there, and it then answers 404 with an `x-vercel-error` header. The real
+   * host is usually <project>-<account-slug>.vercel.app.
+   *
+   * A 404 WITHOUT that header is the application's own 404 page, which means
+   * the host is live and the app simply has no route at `/` -- that counts as
+   * live. Returns null when nothing serves yet (e.g. before the first deploy);
+   * the next scan retries.
+   */
+  async pickLiveDomain(domains) {
+    for (const name of domains) {
+      try {
+        const res = await fetch(`https://${name}`, { redirect: 'follow', signal: AbortSignal.timeout(10_000) });
+        if (!res.headers.get('x-vercel-error')) return name;
+      } catch { /* DNS or timeout: treat as not live, try the next */ }
+    }
+    return null;
+  },
+
+  /**
    * Upsert a plaintext build/runtime environment variable onto the project.
    * These come from .deploy.yml, so they are public by definition -- real
    * secrets are added by an admin in the dashboard and are never touched here.

@@ -98,9 +98,12 @@ for (const r of repos) {
     // per push; this is the one students should be given.
     if (!state.stableUrl) {
       const domains = await vercel.projectDomains(state.projectId);
-      if (domains.length) {
-        state.stableUrl = `https://${domains[0]}`;
-        console.log(`    stable url ${state.stableUrl}${domains.length > 1 ? `  (also: ${domains.slice(1).join(', ')})` : ''}`);
+      const live = await vercel.pickLiveDomain(domains);
+      if (live) {
+        state.stableUrl = `https://${live}`;
+        console.log(`    stable url ${state.stableUrl}`);
+      } else if (domains.length) {
+        console.log(`    no live domain yet (candidates: ${domains.join(', ')}); will retry next scan`);
       }
     }
 
