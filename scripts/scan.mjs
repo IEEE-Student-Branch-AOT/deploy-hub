@@ -148,7 +148,11 @@ for (const r of repos) {
     }
 
     state.branch = t.ref;
-    if (state.lastSha === t.sha && state.lastStatus === 'success') continue;
+    // Deployment is a function of the commit, nothing else: no new push, no
+    // redeploy. Failures are NOT retried -- a broken build fails identically
+    // every time, and retrying it every 10 minutes burns the Hobby account's
+    // 100-deployments-per-day budget. To force one, push a commit.
+    if (state.lastSha === t.sha) continue;
 
     matrix.push({
       key: t.key,
