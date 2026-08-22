@@ -1,5 +1,6 @@
 {
   "repos": {
+<<<<<<< Updated upstream
     "IEEESB_website": {
       "environments": {},
       "defaultBranch": "main",
@@ -56,6 +57,16 @@
       "defaultBranch": "main",
       "status": "skipped",
       "reason": "no package.json and no index.html at the repository root"
+=======
+    "ieee-gaming-hub-backend": {
+      "environments": {
+        "production": {
+          "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
+          "lastStatus": "failure",
+          "lastRun": "2026-08-22T19:12:32.243Z"
+        }
+      }
+>>>>>>> Stashed changes
     }
   }
 }
