@@ -12,9 +12,9 @@
           "projectId": "prj_pDXPU95MEYCfK3zirIAHTF7tV3bL",
           "projectName": "sbaot-ieee-gaming-hub-backend",
           "branch": "main",
-          "lastSha": null,
+          "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T21:11:56.608Z",
+          "lastRun": "2026-08-22T21:17:57.622Z",
           "isPublic": true,
           "frameworkSlug": null
         }
@@ -30,9 +30,9 @@
           "projectId": "prj_3onELTSdbuOmD9mDAOAVts3K2d60",
           "projectName": "sbaot-ieee-gaming-hub-frontend",
           "branch": "main",
-          "lastSha": null,
+          "lastSha": "fe697778ccee113ff95b9af724646645909a6a03",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T21:11:58.194Z",
+          "lastRun": "2026-08-22T21:17:59.055Z",
           "isPublic": true,
           "frameworkSlug": "create-react-app"
         }
@@ -48,10 +48,10 @@
           "projectId": "prj_6a5tQx7voddCAHYINuTgvxPwyBAn",
           "projectName": "sbaot-newwebsite",
           "branch": "main",
-          "lastSha": null,
+          "lastSha": "5159591cd88277bc826913af4bebe9f0dc6fac6d",
           "lastStatus": "success",
-          "lastRun": "2026-08-22T21:11:59.870Z",
-          "deploymentUrl": "https://sbaot-newwebsite-9hdthb31p-ieee-sbaot.vercel.app",
+          "lastRun": "2026-08-22T21:18:00.335Z",
+          "deploymentUrl": "https://sbaot-newwebsite-rb9wmn8nx-ieee-sbaot.vercel.app",
           "isPublic": true,
           "frameworkSlug": "nextjs"
         }
