@@ -1,3 +1,18 @@
 {
+<<<<<<< Updated upstream
   "repos": {}
+=======
+  "repos": {
+    "newWebsite": {
+      "environments": {
+        "production": {
+          "lastSha": "af00501e9a8bcaed40231119d7781efbc1638d4c",
+          "lastStatus": "success",
+          "lastRun": "2026-08-22T19:37:18.758Z",
+          "url": "https://sbaot-newwebsite.vercel.app"
+        }
+      }
+    }
+  }
+>>>>>>> Stashed changes
 }
