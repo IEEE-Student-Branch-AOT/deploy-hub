@@ -94,6 +94,14 @@ for (const r of repos) {
       console.log(`  ${repo}/${t.key} -> project ${project.name} (${project.id})${existing ? '' : ' [created]'}`);
     }
 
+    // Sync build env only when .deploy.yml changed it, to keep API calls down.
+    const envFingerprint = JSON.stringify(config.build.env);
+    if (envFingerprint !== '{}' && state.envFingerprint !== envFingerprint) {
+      for (const [k, v] of Object.entries(config.build.env)) await vercel.setEnv(state.projectId, k, v);
+      state.envFingerprint = envFingerprint;
+      console.log(`    synced ${Object.keys(config.build.env).length} build env var(s)`);
+    }
+
     state.branch = t.ref;
     if (state.lastSha === t.sha && state.lastStatus === 'success') continue;
 
@@ -106,10 +114,8 @@ for (const r of repos) {
       project_id: state.projectId,
       project_name: state.projectName,
       root: config.root,
-      node: config.node,
       prod: t.prod,
       pr: t.pr || 0,
-      build_env: JSON.stringify(config.build.env),
     });
   }
   } catch (err) {

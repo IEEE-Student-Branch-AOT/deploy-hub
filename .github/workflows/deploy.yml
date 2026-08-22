@@ -1,14 +1,19 @@
 name: deploy
 
-# Three jobs, three trust levels. This split is the whole security model:
+# Two jobs, two trust levels:
 #
 #   fetch   holds the GitHub App token, runs no repository code (checkout only)
-#   build   holds NO secrets, runs `npm ci` and `vercel build` -- i.e. arbitrary
-#           student code, including postinstall hooks and next.config.js
-#   deploy  holds VERCEL_TOKEN, runs no repository code (uploads .vercel/output)
+#   deploy  holds VERCEL_TOKEN, runs no repository code (uploads source only)
 #
-# Never collapse build and deploy into one job. A malicious postinstall script
-# in a student repo would then be able to exfiltrate the Vercel token.
+# The build itself happens on Vercel's infrastructure, not on this runner. That
+# is deliberate: `npm ci` executes student-authored postinstall scripts and
+# `next.config.js` is student-authored code, so neither may ever run in a job
+# holding VERCEL_TOKEN. Vercel builds in its own sandbox, where the only
+# credentials present are that project's own environment variables.
+#
+# An earlier version built here with `vercel build --prebuilt`. That does not
+# work: the Vercel CLI requires authentication even for a local build, which
+# would have put the account token in the same job as student code.
 
 on:
   workflow_call:
@@ -20,9 +25,7 @@ on:
       project_id:   { required: true,  type: string }
       project_name: { required: true,  type: string }
       root:         { required: false, type: string, default: '.' }
-      node:         { required: false, type: string, default: '22.x' }
       prod:         { required: false, type: boolean, default: true }
-      build_env:    { required: false, type: string, default: '{}' }
 
 permissions: {}
 
@@ -52,7 +55,7 @@ jobs:
           persist-credentials: false
 
       - name: Package the source tree
-        run: tar --exclude=.git -czf source.tgz -C source .
+        run: tar --exclude=.git --exclude=node_modules -czf source.tgz -C source .
 
       - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
@@ -60,95 +63,39 @@ jobs:
           path: source.tgz
           retention-days: 1
 
-  build:
+  deploy:
     needs: fetch
     runs-on: ubuntu-latest
-    # No `secrets:` are referenced anywhere in this job. Keep it that way.
-    steps:
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        with:
-          name: source-${{ needs.fetch.outputs.slug }}
-
-      - run: mkdir -p source && tar -xzf source.tgz -C source
-
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
-        with:
-          node-version: ${{ inputs.node }}
-
-      - run: npm install --global vercel@latest
-
-      - name: Link the project without authenticating
-        working-directory: source/${{ inputs.root }}
-        run: |
-          mkdir -p .vercel
-          printf '{"projectId":"%s","orgId":"%s"}\n' \
-            '${{ inputs.project_id }}' '${{ vars.VERCEL_ORG_ID }}' > .vercel/project.json
-
-      - name: Install dependencies
-        working-directory: source/${{ inputs.root }}
-        run: |
-          if [ -f package-lock.json ]; then npm ci --no-audit --no-fund
-          elif [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile
-          elif [ -f yarn.lock ]; then corepack enable && yarn install --frozen-lockfile
-          elif [ -f package.json ]; then npm install --no-audit --no-fund
-          else echo 'static site: nothing to install'; fi
-
-      - name: Export build-time environment
-        run: |
-          node -e '
-            const env = JSON.parse(process.env.BUILD_ENV || "{}");
-            const fs = require("node:fs");
-            for (const [k, v] of Object.entries(env)) fs.appendFileSync(process.env.GITHUB_ENV, `${k}=${v}\n`);
-          '
-        env:
-          BUILD_ENV: ${{ inputs.build_env }}
-
-      - name: vercel build
-        working-directory: source/${{ inputs.root }}
-        run: vercel build --yes ${{ inputs.prod && '--prod' || '' }}
-
-      - run: tar -czf output.tgz -C source/${{ inputs.root }}/.vercel output
-
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        with:
-          name: output-${{ needs.fetch.outputs.slug }}
-          path: output.tgz
-          retention-days: 1
-
-  deploy:
-    needs: [fetch, build]
-    if: always() && needs.fetch.result == 'success'
-    runs-on: ubuntu-latest
-    environment: production      # gate VERCEL_TOKEN behind an environment
+    environment: production      # gates VERCEL_TOKEN to branch main
     steps:
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 22
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+      - run: npm install --global vercel@latest
 
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        if: needs.build.result == 'success'
         with:
-          name: output-${{ needs.fetch.outputs.slug }}
+          name: source-${{ needs.fetch.outputs.slug }}
 
-      - name: Unpack prebuilt output
-        if: needs.build.result == 'success'
+      - name: Unpack (extraction only -- nothing from the repo is executed)
         run: |
-          mkdir -p deploy/.vercel && tar -xzf output.tgz -C deploy/.vercel
+          mkdir -p source && tar -xzf source.tgz -C source
+          mkdir -p 'source/${{ inputs.root }}/.vercel'
           printf '{"projectId":"%s","orgId":"%s"}\n' \
-            '${{ inputs.project_id }}' '${{ vars.VERCEL_ORG_ID }}' > deploy/.vercel/project.json
+            '${{ inputs.project_id }}' '${{ vars.VERCEL_ORG_ID }}' \
+            > 'source/${{ inputs.root }}/.vercel/project.json'
 
-      - name: vercel deploy --prebuilt
-        if: needs.build.result == 'success'
+      - name: vercel deploy
         id: vercel
-        working-directory: deploy
+        working-directory: source/${{ inputs.root }}
         run: |
           set -o pipefail
-          vercel deploy --prebuilt --yes ${{ inputs.prod && '--prod' || '' }} \
+          # Build-time env vars live on the Vercel project (set by the scan job
+          # from .deploy.yml), so nothing student-controlled reaches this shell.
+          vercel deploy --yes ${{ inputs.prod && '--prod' || '' }} \
             --token "$VERCEL_TOKEN" ${VERCEL_TEAM_ID:+--scope "$VERCEL_TEAM_ID"} \
-            | tee deploy.log
+            2>&1 | tee deploy.log
           echo "url=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.vercel\.app' deploy.log | tail -1)" >> "$GITHUB_OUTPUT"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

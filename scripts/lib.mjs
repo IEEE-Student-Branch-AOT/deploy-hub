@@ -113,8 +113,24 @@ export const vercel = {
     return project;
   },
 
-  // Best effort: only affects serverless function runtime, not the build (which
-  // happens on a GitHub runner). Never fail a deployment over it.
+  /**
+   * Upsert a plaintext build/runtime environment variable onto the project.
+   * These come from .deploy.yml, so they are public by definition -- real
+   * secrets are added by an admin in the dashboard and are never touched here.
+   * Setting them via the API (rather than passing --build-env on the CLI) keeps
+   * student-controlled strings out of any shell command line.
+   */
+  async setEnv(projectId, key, value) {
+    const sep = vercel.scope() ? '&' : '?';
+    const r = await api(`${VC}/v10/projects/${projectId}/env${vercel.scope()}${sep}upsert=true`, {
+      token: vercel.token(),
+      method: 'POST',
+      body: { key, value, type: 'plain', target: ['production', 'preview'] },
+    });
+    if (!r.ok) console.warn(`    note: could not set env ${key} (${r.status}: ${r.text.slice(0, 120)})`);
+  },
+
+  // Best effort: affects the serverless runtime only. Never fail a deploy over it.
   async setNodeVersion(projectId, nodeVersion) {
     const r = await api(`${VC}/v9/projects/${projectId}${vercel.scope()}`, {
       token: vercel.token(),

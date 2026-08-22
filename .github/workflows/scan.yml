@@ -74,9 +74,7 @@ jobs:
       project_id: ${{ matrix.project_id }}
       project_name: ${{ matrix.project_name }}
       root: ${{ matrix.root }}
-      node: ${{ matrix.node }}
       prod: ${{ matrix.prod }}
-      build_env: ${{ matrix.build_env }}
 
   record:
     needs: [scan, deploy]
