@@ -27,7 +27,10 @@
         "production": {
           "projectId": "prj_3onELTSdbuOmD9mDAOAVts3K2d60",
           "projectName": "sbaot-ieee-gaming-hub-frontend",
-          "branch": "main"
+          "branch": "main",
+          "lastSha": "fe697778ccee113ff95b9af724646645909a6a03",
+          "lastStatus": "failure",
+          "lastRun": "2026-08-22T19:52:01.008Z"
         }
       },
       "defaultBranch": "main",
