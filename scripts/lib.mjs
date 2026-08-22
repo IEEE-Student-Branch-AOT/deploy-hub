@@ -103,11 +103,25 @@ export const vercel = {
       token: vercel.token(),
       method: 'POST',
       // framework: null lets Vercel auto-detect from the prebuilt output.
-      body: { name, framework: null, ...(nodeVersion ? { nodeVersion } : {}) },
+      // nodeVersion is rejected here -- it can only be PATCHed after creation.
+      body: { name, framework: null },
     });
     if (r.status === 409) return vercel.findProject(name);
     if (!r.ok) throw new Error(`createProject ${name} ${r.status}: ${r.text}`);
-    return { id: r.json.id, name: r.json.name };
+    const project = { id: r.json.id, name: r.json.name };
+    if (nodeVersion) await vercel.setNodeVersion(project.id, nodeVersion);
+    return project;
+  },
+
+  // Best effort: only affects serverless function runtime, not the build (which
+  // happens on a GitHub runner). Never fail a deployment over it.
+  async setNodeVersion(projectId, nodeVersion) {
+    const r = await api(`${VC}/v9/projects/${projectId}${vercel.scope()}`, {
+      token: vercel.token(),
+      method: 'PATCH',
+      body: { nodeVersion },
+    });
+    if (!r.ok) console.warn(`    note: could not set nodeVersion=${nodeVersion} (${r.status})`);
   },
 };
 

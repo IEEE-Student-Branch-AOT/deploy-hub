@@ -34,6 +34,8 @@ for (const r of repos) {
   const rec = entry(repo);
   rec.defaultBranch = r.default_branch;
 
+  // One broken repo must never block deployments for every other repo.
+  try {
   // ---- config -------------------------------------------------------------
   const configText = await gh.getFile(repo, '.deploy.yml', r.default_branch);
   const { config, errors } = parseConfig(configText);
@@ -109,6 +111,11 @@ for (const r of repos) {
       pr: t.pr || 0,
       build_env: JSON.stringify(config.build.env),
     });
+  }
+  } catch (err) {
+    rec.status = 'error';
+    rec.reason = String(err.message || err);
+    notes.push(`${repo}: ${rec.reason}`);
   }
 }
 
