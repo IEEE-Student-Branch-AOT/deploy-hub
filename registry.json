@@ -14,7 +14,7 @@
           "branch": "main",
           "lastSha": "8f71d121b5bf7e6020f114e13eadf46bb6d6da46",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T21:01:56.643Z",
+          "lastRun": "2026-08-22T21:11:56.608Z",
           "isPublic": true
         }
       },
@@ -31,7 +31,7 @@
           "branch": "main",
           "lastSha": "fe697778ccee113ff95b9af724646645909a6a03",
           "lastStatus": "failure",
-          "lastRun": "2026-08-22T21:01:58.079Z",
+          "lastRun": "2026-08-22T21:11:58.194Z",
           "isPublic": true
         }
       },
@@ -46,10 +46,10 @@
           "projectId": "prj_6a5tQx7voddCAHYINuTgvxPwyBAn",
           "projectName": "sbaot-newwebsite",
           "branch": "main",
-          "lastSha": "af00501e9a8bcaed40231119d7781efbc1638d4c",
+          "lastSha": "5159591cd88277bc826913af4bebe9f0dc6fac6d",
           "lastStatus": "success",
-          "lastRun": "2026-08-22T20:22:16.632Z",
-          "deploymentUrl": "https://sbaot-newwebsite-51hezu53n-ieee-sbaot.vercel.app",
+          "lastRun": "2026-08-22T21:11:59.870Z",
+          "deploymentUrl": "https://sbaot-newwebsite-9hdthb31p-ieee-sbaot.vercel.app",
           "isPublic": true
         }
       },
