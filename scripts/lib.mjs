@@ -106,6 +106,51 @@ export const gh = {
     return true;
   },
 
+  /**
+   * Record a native GitHub deployment. This is what produces the "View
+   * deployment" button on the commit and PR, and the Deployments list in the
+   * repo sidebar -- the affordance people already recognise, so there is no
+   * ambiguity about which URL is the site.
+   *
+   * Needs the App's "Deployments: Read and write" permission; skipped with a
+   * warning otherwise.
+   */
+  async recordDeployment(repo, sha, { environment, url, success, logUrl, description, transient }) {
+    const create = await api(`${GH}/repos/${ORG}/${repo}/deployments`, {
+      token: gh.token(),
+      method: 'POST',
+      body: {
+        ref: sha,
+        environment,
+        description: (description || '').slice(0, 140),
+        auto_merge: false,          // never let this open a merge commit
+        required_contexts: [],      // do not wait on other checks
+        transient_environment: !!transient,
+        production_environment: environment === 'production',
+      },
+    });
+    if (!create.ok) {
+      const hint = create.status === 403 || create.status === 404
+        ? ' -- grant the App "Deployments: Read and write" for the View deployment button'
+        : '';
+      console.warn(`  deployment for ${repo}@${sha.slice(0, 7)} failed ${create.status}${hint}`);
+      return false;
+    }
+
+    const r = await api(`${GH}/repos/${ORG}/${repo}/deployments/${create.json.id}/statuses`, {
+      token: gh.token(),
+      method: 'POST',
+      body: {
+        state: success ? 'success' : 'failure',
+        ...(success && url ? { environment_url: url } : {}), // powers the button
+        ...(logUrl ? { log_url: logUrl } : {}),
+        description: (description || '').slice(0, 140),
+      },
+    });
+    if (!r.ok) console.warn(`  deployment status ${create.json.id} failed ${r.status}`);
+    return r.ok;
+  },
+
   async setStatus(repo, sha, { state, url, context, description }) {
     const r = await api(`${GH}/repos/${ORG}/${repo}/statuses/${sha}`, {
       token: gh.token(),

@@ -53,9 +53,25 @@ for (const file of files) {
   await gh.createCheckRun(r.repo, r.sha, {
     name: `deploy/${r.key}`,
     conclusion: success ? 'success' : 'failure',
-    title: success ? 'Deployed' : 'Build failed',
+    title: success ? `Deployed to ${link.replace(/^https:\/\//, '')}` : 'Build failed',
     summary: success
-      ? `Live at ${link}`
+      ? [
+          `# 🔗 ${link}`,
+          '',
+          '**This is your site.** The address never changes — every push updates this',
+          'same URL, so it is safe to share or put on a CV.',
+          '',
+          ...(r.url && r.url !== link
+            ? [
+                '<details><summary>Other links (you probably do not need these)</summary>',
+                '',
+                `- \`${r.url}\` — snapshot of *this one commit only*; a later push will not update it.`,
+                `- [Build log](${r.runUrl}) — how this deployment was produced.`,
+                '',
+                '</details>',
+              ]
+            : [`[Build log](${r.runUrl})`]),
+        ].join('\n')
       : [
           'Vercel could not build this commit. The end of the build log is below.',
           '',
@@ -67,6 +83,15 @@ for (const file of files) {
         ].join('\n'),
     text: success || !r.errorLog ? undefined : ['```', r.errorLog, '```'].join('\n'),
     detailsUrl: link,
+  });
+
+  await gh.recordDeployment(r.repo, r.sha, {
+    environment: r.key,
+    url: link,
+    success,
+    logUrl: r.runUrl,
+    description: success ? `Live at ${link}` : 'Build failed',
+    transient: r.key.startsWith('pr-'), // preview URLs are throwaway
   });
 
   console.log(`  ${r.repo}/${r.key} ${r.status}${link ? ` ${link}` : ''}`);
