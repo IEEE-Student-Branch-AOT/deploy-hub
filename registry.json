@@ -73,6 +73,12 @@
       "defaultBranch": "main",
       "status": "skipped",
       "reason": "no package.json and no index.html at the repository root"
+    },
+    "IEEE_EVENT_AUTUMN": {
+      "environments": {},
+      "defaultBranch": "main",
+      "status": "skipped",
+      "reason": "no package.json and no index.html at the repository root"
     }
   }
 }
