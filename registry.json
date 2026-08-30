@@ -48,10 +48,10 @@
           "projectId": "prj_6a5tQx7voddCAHYINuTgvxPwyBAn",
           "projectName": "sbaot-newwebsite",
           "branch": "main",
-          "lastSha": "f7fdb696667ac1860e36c83140b145cefe70d96b",
+          "lastSha": "90114aaca44724b8843f9f2b870424f7f54293a2",
           "lastStatus": "success",
-          "lastRun": "2026-08-22T21:39:28.010Z",
-          "deploymentUrl": "https://sbaot-newwebsite-1yht2hqzd-ieee-sbaot.vercel.app",
+          "lastRun": "2026-08-30T22:10:42.822Z",
+          "deploymentUrl": "https://sbaot-newwebsite-mnegy73xj-ieee-sbaot.vercel.app",
           "isPublic": true,
           "frameworkSlug": "nextjs",
           "stableUrl": "https://sbaot-newwebsite.vercel.app"
