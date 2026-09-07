@@ -81,10 +81,20 @@
       "reason": "no package.json and no index.html at the repository root"
     },
     "PERKER_PROTOCOL": {
-      "environments": {},
+      "environments": {
+        "production": {
+          "projectId": "prj_KbC3c03VGd8RwsS8CJVTBicV6mBe",
+          "projectName": "sbaot-perker-protocol",
+          "frameworkSlug": "nextjs",
+          "lastSha": null,
+          "isPublic": true,
+          "branch": "main"
+        }
+      },
       "defaultBranch": "main",
-      "status": "skipped",
-      "reason": "no package.json and no index.html at the repository root"
+      "status": "active",
+      "reason": "",
+      "framework": "next"
     }
   }
 }
