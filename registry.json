@@ -91,7 +91,8 @@
           "branch": "main",
           "lastStatus": "success",
           "lastRun": "2026-09-07T15:57:37.251Z",
-          "deploymentUrl": "https://sbaot-perker-protocol-i0otm9d46-ieee-sbaot.vercel.app"
+          "deploymentUrl": "https://sbaot-perker-protocol-i0otm9d46-ieee-sbaot.vercel.app",
+          "stableUrl": "https://sbaot-perker-protocol.vercel.app"
         }
       },
       "defaultBranch": "main",
