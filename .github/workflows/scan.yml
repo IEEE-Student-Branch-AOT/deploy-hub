@@ -4,6 +4,20 @@ on:
   schedule:
     - cron: '*/10 * * * *'   # GitHub often runs cron late under load; treat 10m as a floor
   workflow_dispatch:
+    inputs:
+      repo:
+        description: 'Repo to deploy (blank = every repo, as the cron does)'
+        required: false
+        type: string
+      environment:
+        description: 'Environment, e.g. production / dev (blank = all of them)'
+        required: false
+        type: string
+      force:
+        description: 'Redeploy even when the commit has not changed'
+        required: false
+        type: boolean
+        default: false
   repository_dispatch:
     types: [deploy-request]  # used by the Phase 3 webhook receiver
 
@@ -54,6 +68,11 @@ jobs:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+          # Manual run only; the cron and repository_dispatch leave these empty
+          # and so behave exactly as before.
+          ONLY_REPO: ${{ inputs.repo }}
+          ONLY_ENV: ${{ inputs.environment }}
+          FORCE: ${{ inputs.force }}
 
       - name: Persist newly provisioned projects
         run: |

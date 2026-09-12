@@ -15,6 +15,17 @@ import {
 const REGISTRY = 'registry.json';
 const IGNORE = new Set((process.env.IGNORE_REPOS || '.github,deploy-hub').split(',').map((s) => s.trim()));
 
+// Manual-run filters. All empty on the cron path, which therefore behaves
+// exactly as it always has: every repo, and only genuinely new commits.
+const ONLY_REPO = (process.env.ONLY_REPO || '').trim().toLowerCase();
+const ONLY_ENV = (process.env.ONLY_ENV || '').trim().toLowerCase();
+const FORCE = process.env.FORCE === 'true';
+let matchedRepo = false;
+
+if (ONLY_REPO || ONLY_ENV || FORCE) {
+  console.log(`manual run -- repo=${ONLY_REPO || '(all)'} env=${ONLY_ENV || '(all)'} force=${FORCE}`);
+}
+
 const registry = readJson(REGISTRY, { repos: {} });
 const matrix = [];
 const notes = [];
@@ -31,6 +42,8 @@ console.log(`found ${repos.length} candidate repos in ${ORG}`);
 for (const r of repos) {
   const repo = r.name;
   if (IGNORE.has(repo)) continue;
+  if (ONLY_REPO && repo.toLowerCase() !== ONLY_REPO) continue;
+  matchedRepo = true;
 
   const rec = entry(repo);
   rec.defaultBranch = r.default_branch;
@@ -69,13 +82,14 @@ for (const r of repos) {
   // ---- named environments -------------------------------------------------
   const targets = [];
   for (const [envName, spec] of Object.entries(config.environments)) {
+    if (ONLY_ENV && envName.toLowerCase() !== ONLY_ENV) continue;
     const sha = await gh.branchSha(repo, spec.branch);
     if (!sha) { notes.push(`${repo}: branch "${spec.branch}" for env "${envName}" does not exist`); continue; }
     targets.push({ key: envName, envName, ref: spec.branch, sha, prod: true });
   }
 
   // ---- pull request previews ---------------------------------------------
-  if (config.previews.pull_requests) {
+  if (config.previews.pull_requests && !ONLY_ENV) {
     for (const pr of await gh.openPulls(repo)) {
       targets.push({ key: `pr-${pr.number}`, envName: 'production', ref: pr.ref, sha: pr.sha, prod: false, pr: pr.number });
     }
@@ -151,8 +165,10 @@ for (const r of repos) {
     // Deployment is a function of the commit, nothing else: no new push, no
     // redeploy. Failures are NOT retried -- a broken build fails identically
     // every time, and retrying it every 10 minutes burns the Hobby account's
-    // 100-deployments-per-day budget. To force one, push a commit.
-    if (state.lastSha === t.sha) continue;
+    // 100-deployments-per-day budget. To force one, push a commit, or run this
+    // workflow manually with force: true (what that flag overrides is exactly
+    // this line).
+    if (!FORCE && state.lastSha === t.sha) continue;
 
     matrix.push({
       key: t.key,
@@ -172,6 +188,10 @@ for (const r of repos) {
     rec.reason = String(err.message || err);
     notes.push(`${repo}: ${rec.reason}`);
   }
+}
+
+if (ONLY_REPO && !matchedRepo) {
+  notes.push(`no repo named "${process.env.ONLY_REPO}" in ${ORG} (names are case-insensitive here, but must otherwise match exactly)`);
 }
 
 // Guardrail: Vercel Hobby allows 100 deployments per day across the account.
