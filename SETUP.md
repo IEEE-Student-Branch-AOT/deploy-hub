@@ -241,6 +241,59 @@ timer. Keep the cron as a safety net for missed webhooks.
 
 ---
 
+## Manual deploys
+
+### Admins — deploy one project on demand
+
+**Actions → scan-and-deploy → Run workflow**, then fill in:
+
+| Input | Meaning |
+| --- | --- |
+| `repo` | Repository name, e.g. `newWebsite`. Blank = every repo, exactly like the cron. |
+| `environment` | `production`, `dev`, … Blank = all of that repo's environments. |
+| `force` | Redeploy even when the commit has not changed. |
+
+Or from the CLI:
+
+```bash
+REPO=IEEE-Student-Branch-AOT/deploy-hub
+
+# redeploy one project, no code change needed
+gh workflow run scan.yml --repo $REPO -f repo=newWebsite -f force=true
+
+# just that repo's dev environment
+gh workflow run scan.yml --repo $REPO -f repo=newWebsite -f environment=dev -f force=true
+
+# a normal full sweep, on demand
+gh workflow run scan.yml --repo $REPO
+```
+
+Use `force: true` when the commit is unchanged but the deployment needs to be
+rebuilt anyway. The two cases that come up:
+
+- **You changed an environment variable in the Vercel dashboard.** Vercel binds
+  env vars at deploy time, so the live site keeps the old value until something
+  redeploys. Nothing about the repo changed, so only a forced run will do it.
+- **A deploy failed for a transient reason** (a Vercel incident, a network
+  blip). Failures are deliberately not retried on their own.
+
+`force` bypasses one thing only: the "has this commit already been deployed"
+check. It cannot make a broken build succeed.
+
+### Students — redeploy without a code change
+
+Running workflows in `deploy-hub` requires write access to it, which students
+deliberately do not have (see the security note in `README.md`). They do not
+need it: an empty commit changes the SHA, which is the only thing the hub
+looks at.
+
+```bash
+git commit --allow-empty -m "redeploy"
+git push
+```
+
+The next scan picks it up like any other push.
+
 ## Maintenance
 
 - **Rotate `VERCEL_TOKEN`** when officers change, and on its expiry date.
