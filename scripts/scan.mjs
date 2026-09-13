@@ -125,6 +125,20 @@ for (const r of repos) {
       }
     }
 
+    // Hand the trigger to Vercel where we can. Only named environments are
+    // linked: a pull-request target shares the production project, and Vercel
+    // produces PR previews by itself once the project is linked.
+    const linkKey = `${ORG}/${repo}#${t.ref}`;
+    if (t.prod && state.gitLinked !== linkKey) {
+      if (await vercel.linkGitRepository(state.projectId, `${ORG}/${repo}`, t.ref)) {
+        state.gitLinked = linkKey;
+        console.log(`    git-linked to ${ORG}/${repo} (production branch ${t.ref})`);
+      } else if (state.gitLinked) {
+        // Previously linked, now refused: fall back rather than go silent.
+        delete state.gitLinked;
+      }
+    }
+
     // Projects created before makePublic() existed still carry a login wall.
     // Clear it once, then remember so we stop calling the API every scan.
     if (!state.isPublic) {
@@ -162,12 +176,16 @@ for (const r of repos) {
     }
 
     state.branch = t.ref;
-    // Deployment is a function of the commit, nothing else: no new push, no
-    // redeploy. Failures are NOT retried -- a broken build fails identically
-    // every time, and retrying it every 10 minutes burns the Hobby account's
-    // 100-deployments-per-day budget. To force one, push a commit, or run this
-    // workflow manually with force: true (what that flag overrides is exactly
-    // this line).
+
+    // Linked projects deploy themselves. Uploading the source as well would
+    // double every deployment against the 100-a-day budget and race Vercel's
+    // own build for the same commit.
+    if (state.gitLinked && !FORCE) continue;
+
+    // Unlinked fallback. Deployment is a function of the commit, nothing else:
+    // no new push, no redeploy. Failures are NOT retried -- a broken build
+    // fails identically every time. To force one, push a commit, or run this
+    // workflow manually with force: true.
     if (!FORCE && state.lastSha === t.sha) continue;
 
     matrix.push({

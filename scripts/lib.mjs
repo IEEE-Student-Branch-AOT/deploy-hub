@@ -319,6 +319,45 @@ export const vercel = {
     if (!r.ok) console.warn(`    note: could not set env ${key} (${r.status}: ${r.text.slice(0, 120)})`);
   },
 
+  /**
+   * Hand the deploy trigger to Vercel itself.
+   *
+   * GitHub's `schedule` event is best-effort and heavily throttled: a cron set
+   * to 10 minutes was measured firing every 1.5-5 hours, so a push could sit
+   * undeployed for most of a day. Once a project is linked to its repository,
+   * Vercel watches it directly and builds on push in seconds, and posts its own
+   * commit checks and pull-request previews. The scan then only has to find new
+   * repos and provision them -- it stops being the thing that deploys.
+   *
+   * Returns false when linking is unavailable (notably if the Hobby plan
+   * refuses repositories owned by a GitHub organisation), and the caller keeps
+   * uploading the source itself. The slow path still works; it is just slow.
+   */
+  async linkGitRepository(projectId, repo, productionBranch) {
+    const r = await api(`${VC}/v9/projects/${projectId}/link${vercel.scope()}`, {
+      token: vercel.token(),
+      method: 'POST',
+      body: { type: 'github', repo },
+    });
+    if (!r.ok) {
+      console.warn(`    git link unavailable for ${repo} (${r.status}: ${r.text.slice(0, 200)})`);
+      return false;
+    }
+
+    // Each environment is its own project, so "production branch" is what makes
+    // the dev project track dev rather than main. Best effort: a project linked
+    // but pointing at the wrong branch is still better than no link at all.
+    if (productionBranch) {
+      const p = await api(`${VC}/v9/projects/${projectId}${vercel.scope()}`, {
+        token: vercel.token(),
+        method: 'PATCH',
+        body: { link: { productionBranch } },
+      });
+      if (!p.ok) console.warn(`    note: could not set production branch to ${productionBranch} (${p.status})`);
+    }
+    return true;
+  },
+
   /** Pin the build preset. See VERCEL_FRAMEWORK for why this is not optional. */
   async setFramework(projectId, framework) {
     const r = await api(`${VC}/v9/projects/${projectId}${vercel.scope()}`, {
