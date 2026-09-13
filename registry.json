@@ -112,7 +112,8 @@
           "branch": "main",
           "lastStatus": "success",
           "lastRun": "2026-09-13T19:15:58.072Z",
-          "deploymentUrl": "https://sbaot-deploy-webhook-r11ae7gu9-ieee-sbaot.vercel.app"
+          "deploymentUrl": "https://sbaot-deploy-webhook-r11ae7gu9-ieee-sbaot.vercel.app",
+          "stableUrl": "https://sbaot-deploy-webhook.vercel.app"
         }
       },
       "defaultBranch": "main",
