@@ -16,7 +16,8 @@
           "lastStatus": "failure",
           "lastRun": "2026-08-22T21:22:31.846Z",
           "isPublic": true,
-          "frameworkSlug": null
+          "frameworkSlug": null,
+          "linkBlocked": true
         }
       },
       "defaultBranch": "main",
@@ -34,7 +35,8 @@
           "lastStatus": "failure",
           "lastRun": "2026-08-22T21:22:33.723Z",
           "isPublic": true,
-          "frameworkSlug": "create-react-app"
+          "frameworkSlug": "create-react-app",
+          "linkBlocked": true
         }
       },
       "defaultBranch": "main",
@@ -54,7 +56,8 @@
           "deploymentUrl": "https://sbaot-newwebsite-9mugqqx5m-ieee-sbaot.vercel.app",
           "isPublic": true,
           "frameworkSlug": "nextjs",
-          "stableUrl": "https://sbaot-newwebsite.vercel.app"
+          "stableUrl": "https://sbaot-newwebsite.vercel.app",
+          "linkBlocked": true
         }
       },
       "defaultBranch": "main",
@@ -92,7 +95,8 @@
           "lastStatus": "success",
           "lastRun": "2026-09-13T18:44:07.855Z",
           "deploymentUrl": "https://sbaot-perker-protocol-6ijmqv1qj-ieee-sbaot.vercel.app",
-          "stableUrl": "https://sbaot-perker-protocol.vercel.app"
+          "stableUrl": "https://sbaot-perker-protocol.vercel.app",
+          "linkBlocked": true
         }
       },
       "defaultBranch": "main",
