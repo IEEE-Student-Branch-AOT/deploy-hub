@@ -99,6 +99,23 @@
       "status": "active",
       "reason": "",
       "framework": "next"
+    },
+    "deploy-webhook": {
+      "environments": {
+        "production": {
+          "projectId": "prj_W40JWAcvrI2lyMoVTyhAY3kUpD4O",
+          "projectName": "sbaot-deploy-webhook",
+          "frameworkSlug": null,
+          "lastSha": null,
+          "linkBlocked": true,
+          "isPublic": true,
+          "branch": "main"
+        }
+      },
+      "defaultBranch": "main",
+      "status": "active",
+      "reason": "",
+      "framework": "custom-build-script"
     }
   }
 }
