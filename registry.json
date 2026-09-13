@@ -106,13 +106,13 @@
           "projectId": "prj_W40JWAcvrI2lyMoVTyhAY3kUpD4O",
           "projectName": "sbaot-deploy-webhook",
           "frameworkSlug": null,
-          "lastSha": "17bd0099737e4c1e4425b49c0e2a5197b8766e3a",
+          "lastSha": "c7265eaf541d37d7662c893a14c5db137698be54",
           "linkBlocked": true,
           "isPublic": true,
           "branch": "main",
           "lastStatus": "success",
-          "lastRun": "2026-09-13T19:15:58.072Z",
-          "deploymentUrl": "https://sbaot-deploy-webhook-r11ae7gu9-ieee-sbaot.vercel.app",
+          "lastRun": "2026-09-13T19:30:09.276Z",
+          "deploymentUrl": "https://sbaot-deploy-webhook-20mzg6cft-ieee-sbaot.vercel.app",
           "stableUrl": "https://sbaot-deploy-webhook.vercel.app"
         }
       },
