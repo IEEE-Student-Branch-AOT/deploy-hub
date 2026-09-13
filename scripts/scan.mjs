@@ -128,12 +128,17 @@ for (const r of repos) {
     // Hand the trigger to Vercel where we can. Only named environments are
     // linked: a pull-request target shares the production project, and Vercel
     // produces PR previews by itself once the project is linked.
+    // linkBlocked is sticky: the Hobby plan refuses private organisation repos
+    // outright ("repo_owned_by_org"), so retrying every scan only adds four
+    // failing API calls and four noisy log lines forever. Clear the flag by
+    // hand in registry.json after upgrading the plan.
     const linkKey = `${ORG}/${repo}#${t.ref}`;
-    if (t.prod && state.gitLinked !== linkKey) {
+    if (t.prod && !state.linkBlocked && state.gitLinked !== linkKey) {
       if (await vercel.linkGitRepository(state.projectId, `${ORG}/${repo}`, t.ref)) {
         state.gitLinked = linkKey;
         console.log(`    git-linked to ${ORG}/${repo} (production branch ${t.ref})`);
-      } else if (state.gitLinked) {
+      } else {
+        state.linkBlocked = true;
         // Previously linked, now refused: fall back rather than go silent.
         delete state.gitLinked;
       }
