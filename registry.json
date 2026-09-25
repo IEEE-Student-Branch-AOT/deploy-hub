@@ -89,12 +89,12 @@
           "projectId": "prj_KbC3c03VGd8RwsS8CJVTBicV6mBe",
           "projectName": "sbaot-perker-protocol",
           "frameworkSlug": "nextjs",
-          "lastSha": "bf72abd1f45dcc050d8d72f99e95f552eb8c0480",
+          "lastSha": "31b5a2d6544f97a4b037127840874b3258e3c161",
           "isPublic": true,
           "branch": "main",
           "lastStatus": "success",
-          "lastRun": "2026-09-25T17:53:36.988Z",
-          "deploymentUrl": "https://sbaot-perker-protocol-8nuxqid7e-ieee-sbaot.vercel.app",
+          "lastRun": "2026-09-25T18:21:40.940Z",
+          "deploymentUrl": "https://sbaot-perker-protocol-mx5c611cd-ieee-sbaot.vercel.app",
           "stableUrl": "https://sbaot-perker-protocol.vercel.app",
           "linkBlocked": true
         }
