@@ -57,7 +57,8 @@
           "isPublic": true,
           "frameworkSlug": "nextjs",
           "stableUrl": "https://sbaot-newwebsite.vercel.app",
-          "linkBlocked": true
+          "linkBlocked": true,
+          "envFingerprint": "{\"CI\":\"false\"}"
         }
       },
       "defaultBranch": "main",
